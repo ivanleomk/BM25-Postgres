@@ -1,4 +1,3 @@
-import psycopg2
 from psycopg2 import OperationalError
 from lib.env import Settings
 import socket
@@ -29,6 +28,27 @@ def verify_connection():
     try:
         connection = get_connection()
         print("Succesfully connected to database!")
+
+        cursor = connection.cursor()
+        insert_query = """INSERT INTO chunk (context, repo, vector, text, issue_id, issue_number, timestamp) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id"""
+        chunk_data = (
+            "Sample context",
+            "Sample repo",
+            [0.0 for _ in range(1536)],
+            "Sample text",
+            1,
+            1,
+            "2021-01-01 00:00:00",
+        )
+        cursor.execute(insert_query, chunk_data)
+        inserted_row_id = cursor.fetchone()[0]
+        connection.commit()
+        print(f"Row inserted into the chunk table with ID {inserted_row_id}")
+
+        delete_query = """DELETE FROM chunk WHERE id = %s"""
+        cursor.execute(delete_query, (inserted_row_id,))
+        connection.commit()
+        print(f"Row with ID {inserted_row_id} removed from the chunk table")
     except OperationalError as e:
         raise e
         print(f"The error '{e}' occurred")

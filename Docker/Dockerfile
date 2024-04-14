@@ -50,7 +50,7 @@ RUN echo "listen_addresses = '*'\nshared_preload_libraries = 'pg_search'" > /etc
 # Expose PostgreSQL port
 EXPOSE 5432
 
-COPY ./Docker/init.sql /docker-entrypoint-initdb.d/
+COPY ./init.sql /docker-entrypoint-initdb.d/
 
 
 # Set the command to start PostgreSQL with the custom configuration file

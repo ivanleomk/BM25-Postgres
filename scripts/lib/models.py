@@ -4,10 +4,10 @@ from datetime import datetime
 
 
 class CommentChunk(BaseModel):
-    chunk_id: str
+    id: int = None
     context: str
-    vector: List[float]
     repo: str
+    vector: List[float]
     text: str
     issue_id: int
     issue_number: int

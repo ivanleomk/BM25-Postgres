@@ -1,7 +1,7 @@
 from datasets import load_dataset
 from tqdm import tqdm
 from collections import defaultdict
-
+import os
 import json
 
 selected_repos = set(
@@ -19,7 +19,10 @@ def download_dataset(n=300):
         .take(n)
     )
     repos = defaultdict(int)
-    with open("../data/issues.jsonl", "a+") as f:
+    file_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../data/issues.jsonl")
+    )
+    with open(file_path, "a+") as f:
         for row in tqdm(dataset, total=n):
             for event in row["events"]:
                 f.write(
@@ -35,7 +38,7 @@ def download_dataset(n=300):
                     )
                     + "\n"
                 )
-                repos[row["repo"]] += 1
+            repos[row["repo"]] += 1
 
     repo_names = list(repos.keys())
     repo_names.sort()
@@ -47,4 +50,5 @@ def download_dataset(n=300):
     print(f"Total: {sum(repos.values())}")
 
 
-download_dataset(100)
+if __name__ == "__main__":
+    download_dataset(20)
