@@ -1,1 +1,5 @@
 psycopg2==2.9.9
+pydantic==2.7.0
+pydantic-settings==2.2.1
+tqdm==4.66.2
+datasets==2.18.0

@@ -1,14 +1,15 @@
 start:
-	docker run --name pg -p 5432:5432 pg-db
+	docker run --name pg -p 5432:5432 --env-file .env pg-db 
 
 clean:
-	docker build --no-cache -t pg-db .
+	docker build --no-cache -t pg-db -f ./Docker/Dockerfile 
 
 build:
-	docker build -t pg-db .
+	docker build -t pg-db -f ./Docker/Dockerfile .
 
-restart:
-	docker rm -f pg && $(MAKE) start
+teardown:
+	docker rm -f pg || true
 
-test:
-	$(MAKE) clean && $(MAKE) restart
+restart: teardown build start
+
+clean-build: teardown clean start

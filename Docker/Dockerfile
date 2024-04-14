@@ -4,10 +4,10 @@ FROM postgres:${version}
 
 ARG version
 
-# Set the environment variables for PostgreSQL
-ENV POSTGRES_USER=myuser
-ENV POSTGRES_PASSWORD=mypassword
-ENV POSTGRES_DB=mydatabase
+# Set the environment variables for PostgreSQL from a .env file
+ENV POSTGRES_USER=${POSTGRES_USER}
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+ENV POSTGRES_DB=${POSTGRES_DB}
 
 # Environment Flags
 ENV PARADEDB_TELEMETRY=false
@@ -40,12 +40,18 @@ RUN apt-get install -y curl
 RUN curl -L "https://github.com/paradedb/paradedb/releases/download/v0.6.0/pg_search-v0.6.0-pg${version}-arm64-ubuntu2204.deb" -o /tmp/pg_search.deb 
 RUN apt install -y --no-install-recommends /tmp/*.deb
 
+RUN apt install postgresql-16-pgvector
+## IUnst
+
 # Copy the custom configuration file into the Docker image
 RUN echo "listen_addresses = '*'\nshared_preload_libraries = 'pg_search'" > /etc/postgresql/postgresql.conf
 
 
 # Expose PostgreSQL port
 EXPOSE 5432
+
+COPY ./Docker/init.sql /docker-entrypoint-initdb.d/
+
 
 # Set the command to start PostgreSQL with the custom configuration file
 CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]

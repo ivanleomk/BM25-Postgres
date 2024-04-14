@@ -1,7 +1,10 @@
 import psycopg2
 from psycopg2 import OperationalError
-
+from lib.env import Settings
 import socket
+from lib.db import get_connection
+
+settings = Settings()
 
 
 def check_port(ip, port):
@@ -22,16 +25,10 @@ else:
     print("Port 5432 is not open")
 
 
-def create_connection():
+def verify_connection():
     try:
-        connection = psycopg2.connect(
-            database="mydatabase",
-            user="myuser",
-            password="mypassword",
-            host="localhost",
-            port="5432",
-        )
-        print("Connection to PostgreSQL DB successful")
+        connection = get_connection()
+        print("Succesfully connected to database!")
     except OperationalError as e:
         raise e
         print(f"The error '{e}' occurred")
@@ -39,4 +36,4 @@ def create_connection():
 
 
 # Connect to the PostgreSQL database
-create_connection()
+verify_connection()
