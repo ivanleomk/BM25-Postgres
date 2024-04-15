@@ -21,3 +21,6 @@ CALL paradedb.create_bm25(
         text_fields => '{text: {tokenizer: {type: "en_stem"}}, context: {}}',
         numeric_fields => '{issue_id: {},issue_number:{}}'
 );
+
+CREATE INDEX ON public.chunk
+USING hnsw (vector vector_cosine_ops);

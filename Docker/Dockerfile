@@ -51,7 +51,6 @@ RUN echo "listen_addresses = '*'\nshared_preload_libraries = 'pg_search'" > /etc
 EXPOSE 5432
 
 # Initialise with desired table and index created
-COPY ./init.sql /docker-entrypoint-initdb.d/
-
+COPY ./Docker/init.sql /docker-entrypoint-initdb.d/
 # Set the command to start PostgreSQL with the custom configuration file
 CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]

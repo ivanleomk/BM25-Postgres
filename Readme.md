@@ -7,14 +7,17 @@ Goals
 - [x] Install pg_search and pgvector
   - [x] Create docker image for use
   - [x] Create a search index based off the text and context columns
-  - [ ] Create a HSNW index for vectors
+  - [x] Create a HSNW index for vectors
 - [x] Ingest data from the issues database
-- [ ] Queries
-  - [ ] Run a query using keywords
-  - [ ] Run a query using a phrase
-  - [ ] Run a query using a vector
+- [x] Queries
+  - [x] Run a query using keywords
+  - [x] Implement naive unigram and bigram matching of queries
+  - [x] ~~Run a query using a phrase~~ ( Not possible with pg_search )
+  - [x] Run a query using a vector
   - [ ] Run a query using hybrid search
   - [ ] Run a query using cohere's re-rankers
+- [ ] Synthethic Data
+  - [ ] Generate Synthethic Data for each individual comment that we have
 - [ ] Evals
   - [ ] Evaluate using MRR
   - [ ] Evaluate using MAR

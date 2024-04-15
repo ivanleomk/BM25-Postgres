@@ -2,12 +2,12 @@ import json
 from openai import AsyncOpenAI
 from openai.types import CreateEmbeddingResponse
 from tqdm.asyncio import tqdm_asyncio as asyncio
-from psycopg2.extras import execute_values
 from asyncio import run
 from lib.models import CommentChunk
 from lib.db import get_connection
 import os
 from typing import List
+from lib.process import batch_items
 
 
 def read_jsonl_file(file_path):
@@ -19,23 +19,7 @@ def read_jsonl_file(file_path):
             yield row
 
 
-def batch(data, batch_size=20):
-    """
-    Batch a list of type T into type List[List[T]] given a batch size
-    """
-    batch = []
-
-    for item in data:
-        batch.append(item)
-        if len(batch) == batch_size:
-            yield batch
-            batch = []
-
-    if batch:
-        yield batch
-
-
-async def embed_data(data):
+async def embed_data(data) -> List[CommentChunk]:
     async def embed_batch(batch):
         client = AsyncOpenAI()
         res: CreateEmbeddingResponse = await client.embeddings.create(
@@ -56,25 +40,21 @@ async def embed_data(data):
             for embedding, row in zip(res.data, batch)
         ]
 
-    batches = batch(data)
+    batches = batch_items(data)
     coros = [embed_batch(batch) for batch in batches]
     res = await asyncio.gather(*coros)
     return [item for sublist in res for item in sublist]
 
 
 def insert_into_db(items: List[CommentChunk]):
-    import psycopg2
-
-    insert_query = """INSERT INTO chunk (context, repo, vector, text, issue_id, issue_number, timestamp) VALUES %s"""
+    insert_query = """INSERT INTO chunk (context, repo, vector, text, issue_id, issue_number, timestamp) VALUES (%s, %s, %s, %s, %s, %s, %s)"""
     connection = get_connection()
     cursor = connection.cursor()
     chunk_data = [
         (
             item.context,
             item.repo,
-            psycopg2.extras.Json(
-                item.vector
-            ),  # Use psycopg2's Json function to handle list of floats
+            item.vector,
             item.text,
             item.issue_id,
             item.issue_number,
@@ -82,7 +62,7 @@ def insert_into_db(items: List[CommentChunk]):
         )
         for item in items
     ]
-    psycopg2.extras.execute_values(cursor, insert_query, chunk_data)
+    cursor.executemany(insert_query, chunk_data)
     connection.commit()
 
 
@@ -91,6 +71,24 @@ if __name__ == "__main__":
     file_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "../data/issues.jsonl")
     )
-    issues = read_jsonl_file(file_path)
-    embedded_issues = run(embed_data(issues))
+    cache_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../data/issues-cached.jsonl")
+    )
+    if not os.path.exists(cache_path):
+        issues = read_jsonl_file(file_path)
+        embedded_issues = run(embed_data(issues))
+        with open(cache_path, "a+") as outfile:
+            for issue in embedded_issues:
+                outfile.write(issue.model_dump_json() + "\n")
+    else:
+        embedded_issues = []
+        with open(cache_path, "r") as infile:
+            for line in infile:
+                embedded_issues.append(CommentChunk(**json.loads(line.strip())))
+        print(f"Read in {len(embedded_issues)}")
+
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM chunk;")
+    connection.commit()
     insert_into_db(embedded_issues)
