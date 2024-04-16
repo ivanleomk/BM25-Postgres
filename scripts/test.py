@@ -30,7 +30,7 @@ def verify_connection():
         print("Succesfully connected to database!")
 
         cursor = connection.cursor()
-        insert_query = """INSERT INTO chunk (context, repo, vector, text, issue_id, issue_number, timestamp) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id"""
+        insert_query = """INSERT INTO chunk (id,context, repo, vector, text, issue_id, issue_number, timestamp) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id"""
         chunk_data = (
             "Sample context",
             "Sample repo",

@@ -3,7 +3,7 @@ from openai import AsyncOpenAI, OpenAI
 from openai.types import CreateEmbeddingResponse
 from lib.metrics import calculate_mrr, calculate_recall, slice_predictions_at_k
 from lib.models import EvalItem
-from lib.db import vector_search
+from lib.db import vector_search, ngram_query
 from lib.process import batch as batch_items
 from tqdm.asyncio import tqdm_asyncio as asyncio
 from asyncio import run
@@ -42,7 +42,7 @@ async def embed_items(items: List[EvalItem]):
     return processed_batch
 
 
-async def evaluate(question_file: str):
+async def evaluate(question_file: str, method: str = "semantic"):
     res = []
 
     items = []
@@ -51,19 +51,20 @@ async def evaluate(question_file: str):
             eval_item = EvalItem(**json.loads(line))
             items.append(eval_item)
 
-    items = items
-    embeddings = await embed_items(items)
+    if method == "semantic":
+        embeddings = await embed_items(items)
+        results = [vector_search(eval_item["embedding"]) for eval_item in embeddings]
+    elif method == "ngram":
+        results = [ngram_query(eval_item[""]) for eval_item in embeddings]
+    else:
+        raise ValueError(f"Invalid method of {method} used")
 
-    for eval_item in embeddings:
-        results = vector_search(eval_item["embedding"])
+    for result, eval_item in zip(results, items):
         metrics = {
-            label: metric_fn(eval_item["id"], [item["id"] for item in results])
+            label: metric_fn(eval_item.id, [item["id"] for item in result])
             for label, metric_fn in evals.items()
         }
-        metrics = {
-            label: round(value, 2) if value != "N/A" else value
-            for label, value in metrics.items()
-        }
+        metrics = {label: round(value, 4) for label, value in metrics.items()}
         res.append(metrics)
 
     df = pd.DataFrame(res)

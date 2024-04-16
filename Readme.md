@@ -16,11 +16,29 @@ Goals
   - [x] Run a query using a vector
   - [ ] Run a query using hybrid search
   - [ ] Run a query using cohere's re-rankers
-- [ ] Synthethic Data
-  - [ ] Generate Synthethic Data for each individual comment that we have
-- [ ] Evals
-  - [ ] Evaluate using MRR
-  - [ ] Evaluate using MAR
+- [x] Synthethic Data
+  - [x] Generate Synthethic Data for each individual comment that we have
+- [x] Evals
+  - [x] Evaluate using MRR
+  - [x] Evaluate using MAR
+  - [x] Evaluate Semantic Search
+  - [ ] Evaluate FTS with LLM Prompting
+  - [ ] Evaluate Trigram + tsvector
+
+Here are our results
+
+
+**Semantic Search**
+```bash
+recall@3     0.950
+recall@10    0.950
+recall@15    1.000
+recall@25    1.000
+mrr@3        0.808
+mrr@10       0.808
+mrr@15       0.812
+mrr@25       0.812
+```
 
 ## Installation Instructions
 
