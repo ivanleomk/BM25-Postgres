@@ -13,13 +13,6 @@ import pandas as pd
 
 import os
 
-SIZES = [3, 10, 15, 25]
-metrics = {"recall": calculate_recall, "mrr": calculate_mrr}
-evals = {}
-
-for metric, sz in itertools.product(metrics.keys(), SIZES):
-    evals[f"{metric}@{sz}"] = slice_predictions_at_k(sz, metrics[metric])
-
 
 async def embed_items(items: List[EvalItem]):
     async def embed_batch(item_batch: List[EvalItem]):
@@ -55,7 +48,7 @@ async def evaluate(question_file: str, method: str = "semantic"):
         embeddings = await embed_items(items)
         results = [vector_search(eval_item["embedding"]) for eval_item in embeddings]
     elif method == "ngram":
-        results = [ngram_query(eval_item[""]) for eval_item in embeddings]
+        results = [ngram_query(eval_item.question) for eval_item in items]
     else:
         raise ValueError(f"Invalid method of {method} used")
 
@@ -74,4 +67,4 @@ async def evaluate(question_file: str, method: str = "semantic"):
 evals_file_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../data/evals.jsonl")
 )
-run(evaluate(evals_file_path))
+run(evaluate(evals_file_path, "semantic"))

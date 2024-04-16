@@ -62,7 +62,7 @@ if __name__ == "__main__":
     rows = fetch_rows(100)
     # Filter out rows with a text that has < 150 characters
     evals_file_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../data/evals.jsonl")
+        os.path.join(os.path.dirname(__file__), "../data/evals-2.jsonl")
     )
     questions = run(generate_synthethic_questions(rows))
     with open(evals_file_path, "w") as f:

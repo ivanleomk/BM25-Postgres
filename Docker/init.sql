@@ -9,6 +9,7 @@ CREATE TABLE chunk (
     text TEXT,
     issue_id INTEGER,
     issue_number INTEGER,
+    chunk_id TEXT,
     timestamp TIMESTAMP
 );
 
